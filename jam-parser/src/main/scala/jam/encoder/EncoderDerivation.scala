@@ -14,5 +14,9 @@ trait EncoderDerivation extends TypeclassDerivation[Encoder] {
     )
   }
 
-  def dispatch[T](ctx: SealedTrait[Encoder, T]): Encoder[T] = ???
+  def dispatch[T](ctx: SealedTrait[Encoder, T]): Encoder[T] = Encoder.instance { t =>
+    ctx.dispatch(t) { sub =>
+      sub.typeclass.encode(sub.cast(t))
+    }
+  }
 }

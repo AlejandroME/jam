@@ -3,6 +3,8 @@ package jam.encoder
 import jam.Yaml
 import jam.Yaml._
 
+import scala.collection.immutable.ListMap
+
 trait Encoder[A] {
 
   def encode(v: A): Yaml
@@ -37,6 +39,9 @@ object Encoder extends EncoderDerivation {
       case Some(t) => enc.encode(t)
     }
 
-  implicit def seqEncoder[A](implicit enc: Encoder[A]): Encoder[Seq[A]] =
+  implicit def listEncoder[A](implicit enc: Encoder[A]): Encoder[List[A]] =
     Encoder.instance(t => YArray(t.map(enc.encode).toVector))
+
+  implicit def mapEncoder[A](implicit enc: Encoder[A]): Encoder[Map[String, A]] =
+    Encoder.instance(t => YMap(ListMap(t.mapValues(enc.encode).toList: _*)))
 }
