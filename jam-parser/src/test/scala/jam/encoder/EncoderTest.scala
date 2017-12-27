@@ -54,6 +54,26 @@ class EncoderTest extends WordSpec with MustMatchers {
         )
       )
     }
+
+    "encode a Map" in {
+      val m: Map[String, Map[String, List[String]]] = Map(
+        "props" -> Map(
+          "sources" -> List("one", "two", "three")
+        )
+      )
+
+      val res: Yaml = Encoder[Map[String, Map[String, List[String]]]].encode(m)
+      
+      res mustBe YMap(
+        ListMap(
+          "props" -> YMap(
+            ListMap(
+              "sources" -> YArray(Vector(YString("one"), YString("two"), YString("three")))
+            )
+          )
+        )
+      )
+    }
   }
 }
 

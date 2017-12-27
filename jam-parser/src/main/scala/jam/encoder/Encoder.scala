@@ -21,6 +21,9 @@ object Encoder extends EncoderDerivation {
   implicit val stringEncoder: Encoder[String] =
     instance(YString)
 
+  implicit val symbolEncoder: Encoder[Symbol] =
+    instance(s => YString(s.name))
+
   implicit val intEncoder: Encoder[Int] =
     instance(i => YBigDecimal(BigDecimal(i)))
 
@@ -42,6 +45,27 @@ object Encoder extends EncoderDerivation {
   implicit def listEncoder[A](implicit enc: Encoder[A]): Encoder[List[A]] =
     Encoder.instance(t => YArray(t.map(enc.encode).toVector))
 
-  implicit def mapEncoder[A](implicit enc: Encoder[A]): Encoder[Map[String, A]] =
-    Encoder.instance(t => YMap(ListMap(t.mapValues(enc.encode).toList: _*)))
+  implicit def tuple2Encoder[A, B](implicit ts: ToString[A], enc: Encoder[B]): Encoder[(A, B)] =
+    Encoder.instance(t => YMap(ListMap(ts.string(t._1) -> enc.encode(t._2))))
+
+  implicit def mapEncoder[A, B](implicit ts: ToString[A], enc: Encoder[B]): Encoder[Map[A, B]] =
+    Encoder.instance(t => YMap(ListMap(t.map(t => (ts.string(t._1), enc.encode(t._2))).toList: _*)))
+
+  abstract class ToString[A] {
+    def string(v: A): String
+  }
+
+  object ToString {
+
+    def instance[T](f: T => String): ToString[T] =
+      f(_)
+
+    implicit val string: ToString[String] = instance(identity)
+
+    implicit val intToString: ToString[Int] = instance(_.toString)
+
+    implicit val longToString: ToString[Long] = instance(_.toString)
+
+    implicit val doubleToString: ToString[Symbol] = instance(_.name)
+  }
 }

@@ -33,5 +33,8 @@ object Yaml {
 
     def ++(m: YMap): YMap =
       YMap(v ++ m.v)
+
+    def +(t: (String, Yaml)): YMap =
+      YMap(v + t)
   }
 }
